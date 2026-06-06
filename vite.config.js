@@ -14,4 +14,5 @@ export default defineConfig({
   },
   plugins: [react(),    tailwindcss(),
 ],
+ base: '/post_bank_parand_guid/',
 })
