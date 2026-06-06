@@ -12,7 +12,7 @@ const router = createBrowserRouter([{path:"/" , element:<Create_bank_account></C
 
   return (
   
-<><RouterProvider router={router}></RouterProvider></>
+<><Create_bank_account></Create_bank_account></>
 
   
   );
