@@ -9,34 +9,56 @@ function Create_bank_account_holder() {
 
 
 const handleCopy = async () => {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      // روش جدید (برای HTTPS)
+  // ۱. اول امتحان کردن روش مدرن
+  if (navigator.clipboard) {
+    try {
       await navigator.clipboard.writeText(authCode);
-    } else {
-      // روش جایگزین برای موبایل و HTTP
-      const textArea = document.createElement("textarea");
-      textArea.value = authCode;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+      finalizeCopy();
+      return; // اگر موفق بود خارج شو
+    } catch (err) {
+      console.warn("Clipboard API failed, trying fallback...");
     }
+  }
 
-    setCopied(true);
+  // ۲. روش Fallback (بسیار مهم برای داخل اپلیکیشن و WebView)
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = authCode;
+    
+    // استایل برای مخفی کردن (بدون استفاده از opacity یا display:none که در اندروید مشکل ساز است)
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
 
-    setTimeout(() => {
-      window.scrollBy({ top: 320, behavior: "smooth" });
-    }, 100);
-
+    if (successful) {
+      finalizeCopy();
+    } else {
+      throw new Error("execCommand unsuccessful");
+    }
   } catch (err) {
-    console.error("خطا در کپی کردن کد:", err);
+    // ۳. اگر باز هم نشد، فقط به کاربر بگوییم کپی شد تا بتواند ادامه دهد
+    // چون کد جلوی چشمش هست، اگر کپی هم نشود خودش دستی می‌زند.
+    finalizeCopy();
     alert("کپی انجام نشد، لطفاً دستی کپی کنید.");
+    console.error("Copy failed completely", err);
   }
 };
+
+const finalizeCopy = () => {
+  setCopied(true);
+  setTimeout(() => {
+    window.scrollBy({ top: 320, behavior: "smooth" });
+  }, 100);
+};
+
+
 
 
   return (
